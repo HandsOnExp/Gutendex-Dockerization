@@ -1,0 +1,33 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gutendex-db
+    environment:
+      - POSTGRES_DB=gutendex
+      - POSTGRES_USER=gutendex
+      # In production, use docker secrets or environment file
+      - POSTGRES_PASSWORD=gutendex_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gutendex_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gutendex -d gutendex"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    name: gutendex_postgres_data
+
+networks:
+  gutendex_network:
+    name: gutendex_network
+    driver: bridge
