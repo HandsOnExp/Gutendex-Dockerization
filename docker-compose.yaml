@@ -10,23 +10,40 @@ services:
       dockerfile: Dockerfile
     container_name: gutendex-app
     environment:
+      # Database settings
       - DATABASE_NAME=gutendex
       - DATABASE_USER=gutendex
       - DATABASE_PASSWORD=gutendex_password
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
+      
+      # Django settings
       - DEBUG=true
-      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
       - SECRET_KEY=your-secret-key-here
-      - STATIC_ROOT=/app/static
+      
+      # Static and media files
+      - STATIC_ROOT=/app/staticfiles
+      - STATICFILES_DIRS=/app/static
       - MEDIA_ROOT=/app/media
+      
+      # Email settings (dummy values)
+      - EMAIL_HOST=dummy.smtp.com
+      - EMAIL_HOST_USER=dummy
+      - EMAIL_HOST_PASSWORD=dummy
+      - EMAIL_HOST_ADDRESS=dummy@example.com
+      
+      # Admin/Manager settings
+      - MANAGER_NAMES=dummy
+      - MANAGER_EMAILS=dummy@example.com
+      - ADMIN_NAMES=dummy
+      - ADMIN_EMAILS=dummy@example.com
+      
+      # Catalog update flag
       - UPDATE_CATALOG=true
-      - ADMIN_NAMES=admin
-      - ADMIN_EMAILS=admin@example.com
-      - MANAGER_NAMES=manager
-      - MANAGER_EMAILS=manager@example.com
     volumes:
-      - static_data:/app/static
+      - static_data:/app/staticfiles
+      - static_dirs:/app/static
       - media_data:/app/media
       - catalog_data:/app/catalog_files
     ports:
@@ -39,12 +56,12 @@ services:
     restart: unless-stopped
 
 volumes:
-  # Add postgres volume
   postgres_data:
     name: gutendex_postgres_data
-  # Application volumes
   static_data:
     name: gutendex_static_data
+  static_dirs:
+    name: gutendex_static_dirs
   media_data:
     name: gutendex_media_data
   catalog_data:
