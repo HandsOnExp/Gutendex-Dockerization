@@ -20,9 +20,7 @@ services:
       - SECRET_KEY=your-secret-key-here
       - STATIC_ROOT=/app/static
       - MEDIA_ROOT=/app/media
-      # Optional: set to true on first run or when update needed
       - UPDATE_CATALOG=true
-      # Admin/Manager settings (optional for development)
       - ADMIN_NAMES=admin
       - ADMIN_EMAILS=admin@example.com
       - MANAGER_NAMES=manager
@@ -41,6 +39,10 @@ services:
     restart: unless-stopped
 
 volumes:
+  # Add postgres volume
+  postgres_data:
+    name: gutendex_postgres_data
+  # Application volumes
   static_data:
     name: gutendex_static_data
   media_data:
