@@ -3,71 +3,65 @@ services:
     extends:
       file: ./postgres-setup/docker-compose.yaml
       service: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend_network
 
   app:
     build:
       context: ./gutendex
       dockerfile: Dockerfile
-    container_name: gutendex-app
     environment:
-      # Database settings
       - DATABASE_NAME=gutendex
       - DATABASE_USER=gutendex
       - DATABASE_PASSWORD=gutendex_password
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
-      
-      # Django settings
       - DEBUG=true
       - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
       - SECRET_KEY=your-secret-key-here
-      
-      # Static and media files
       - STATIC_ROOT=/app/staticfiles
-      - STATICFILES_DIRS=/app/static
+      - STATIC_URL=/static/
       - MEDIA_ROOT=/app/media
-      
-      # Email settings (dummy values)
-      - EMAIL_HOST=dummy.smtp.com
-      - EMAIL_HOST_USER=dummy
-      - EMAIL_HOST_PASSWORD=dummy
-      - EMAIL_HOST_ADDRESS=dummy@example.com
-      
-      # Admin/Manager settings
-      - MANAGER_NAMES=dummy
-      - MANAGER_EMAILS=dummy@example.com
-      - ADMIN_NAMES=dummy
-      - ADMIN_EMAILS=dummy@example.com
-      
-      # Catalog update flag
-      - UPDATE_CATALOG=true
     volumes:
+      # Add this line to map source static files
+      - ./gutendex/project/static:/app/static:ro
+      # Keep existing volume mappings
       - static_data:/app/staticfiles
-      - static_dirs:/app/static
-      - media_data:/app/media
       - catalog_data:/app/catalog_files
-    ports:
-      - "8000:8000"
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               python manage.py updatecatalog &&
+               python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - backend_network
+      - frontend_network
     depends_on:
       db:
         condition: service_healthy
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - static_data:/usr/share/nginx/html/static:ro
+    ports:
+      - "80:80"
     networks:
-      - gutendex_network
-    restart: unless-stopped
+      - frontend_network
+    depends_on:
+      - app
+
+networks:
+  backend_network:
+    driver: bridge
+  frontend_network:
+    driver: bridge
 
 volumes:
   postgres_data:
-    name: gutendex_postgres_data
   static_data:
-    name: gutendex_static_data
-  static_dirs:
-    name: gutendex_static_dirs
-  media_data:
-    name: gutendex_media_data
   catalog_data:
-    name: gutendex_catalog_data
-
-networks:
-  gutendex_network:
-    name: gutendex_network
-    driver: bridge

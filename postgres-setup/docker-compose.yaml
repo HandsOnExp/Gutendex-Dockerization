@@ -14,7 +14,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - gutendex_network
+      - backend_network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gutendex -d gutendex"]
@@ -29,5 +29,5 @@ volumes:
 
 networks:
   gutendex_network:
-    name: gutendex_network
+    name: backend_network
     driver: bridge

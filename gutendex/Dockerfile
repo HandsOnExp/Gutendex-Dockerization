@@ -1,5 +1,6 @@
 FROM python:3.9-slim
 
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=gutendex.settings
@@ -14,10 +15,12 @@ RUN apt-get update \
         python3-dev \
         libpq-dev \
         build-essential \
+        rsync \
     && rm -rf /var/lib/apt/lists/*
 
-# Create necessary directories
-RUN mkdir -p /app/staticfiles /app/static /app/media
+# Create necessary directories including catalog structure
+RUN mkdir -p /app/staticfiles /app/static /app/media \
+    && mkdir -p /app/catalog_files/tmp/cache/epub
 
 # Clean up any existing static files
 RUN rm -rf /app/staticfiles/* /app/static/* /app/media/*
@@ -29,14 +32,19 @@ COPY project/requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -v -r requirements.txt
 
+# Copy entrypoint script and make it executable
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
+# Copy application code
 COPY project/ .
 
 # Clean up static files again after copying project files
-# This ensures no stale static files remain
 RUN rm -rf /app/staticfiles/* /app/static/*
+
+# Ensure proper permissions for catalog files directory
+RUN chown -R root:root /app/catalog_files && \
+    chmod -R 755 /app/catalog_files
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 

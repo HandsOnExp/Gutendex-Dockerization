@@ -22,6 +22,11 @@ env = environ.Env(
     DEBUG=(bool, False),
     MANAGER_EMAILS=(list, []),
     MANAGER_NAMES=(list, []),
+    # Add default empty values for email settings
+    EMAIL_HOST=(str, ''),
+    EMAIL_HOST_ADDRESS=(str, ''),
+    EMAIL_HOST_PASSWORD=(str, ''),
+    EMAIL_HOST_USER=(str, ''),
 )
 environ.Env.read_env()
 
@@ -167,7 +172,9 @@ MANAGERS = [
 ]
 
 
-# Email
+# Email (disabled)
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+# These settings won't be used but are kept to satisfy Django's requirements
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_HOST_ADDRESS = env('EMAIL_HOST_ADDRESS')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
