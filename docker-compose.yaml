@@ -1,0 +1,16 @@
+services:
+  db:
+    extends:
+      file: ./postgres-setup/docker-compose.yaml
+      service: postgres
+
+  #  app service will be here later
+  # app:
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+
+networks:
+  gutendex_network:
+    name: gutendex_network
+    driver: bridge
